@@ -1,8 +1,9 @@
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect,HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.views import generic
-
+import datetime
+from django.utils import timezone
 from .models import Choice, Question
 
 
@@ -41,3 +42,28 @@ def vote(request, question_id):
         # user hits the Back button.
         return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
 
+def createq(request):
+    return render(request,'polls/createquestion.html',{'all_q':Question.object.all()})
+
+def addq(request):
+    q = Question(question_text=request.POST['addquestion'],pub_date=timezone.now())
+    q.save()
+    q_add = request.POST['addquestion']+'\'has been add.'
+    return render(request,'polls/createquestion.html',
+        {'all_q':Question.object.all(),'alert_message':q_add})
+    
+
+def removeq(request):
+    q = request.POST['my_question']
+    q_name = ''
+ 
+    for i in q:
+        if(len(q_name)<50):
+            q_name+='\''+ Question.objects.get(pk=i).question_text+'\''
+        else:
+            q_name=str(len(q))+"Questions"
+    question = Question.objects.get(pk=i)
+    question.delete()
+
+
+    return render(request,'polls/createquestion.html',{'all_q':Question.object.all()})
